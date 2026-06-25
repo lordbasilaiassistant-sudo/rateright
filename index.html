@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RateRight — Find the rate you should actually charge</title>
+<meta name="description" content="RateRight calculates a defensible hourly, day, and project rate range for freelancers and consultants — with a clear justification and copy-paste quote scripts so you charge what you're worth. Free, private, client-side." />
+<meta name="theme-color" content="#0c1c1a" />
+
+<!-- OpenGraph -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="RateRight — Find the rate you should actually charge" />
+<meta property="og:description" content="A calm, private rate calculator for freelancers & consultants. Get a defensible rate range, a clear justification, and copy-paste quote scripts. Free & client-side." />
+<meta property="og:site_name" content="RateRight" />
+<meta property="og:image" content="https://raw.githubusercontent.com/placeholder/rateright/main/og.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="RateRight — Find the rate you should actually charge" />
+<meta name="twitter:description" content="A calm, private rate calculator for freelancers & consultants. Charge with confidence." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How does RateRight calculate my rate?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "RateRight uses transparent, client-side math: a market baseline for your discipline is adjusted by your experience band, your client market, your pricing model, and demand signals you select (niche skill, enterprise clients, proof of results, urgency). It returns a low / recommended / high band rounded to clean numbers. No data leaves your browser."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is RateRight free?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. The full calculator, the rate dial, the justification, and the copy-paste quote scripts are 100% free and run entirely in your browser. The optional Pro mode lets you paste your own GLM (z.ai) API key to generate a custom, client-specific justification and quote message."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do you store my information or my API key?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. RateRight is a static page with no backend, no signup, and no tracking. Your inputs stay in the page. If you use Pro mode, your API key is kept only in the browser tab and is sent only to the official z.ai endpoint."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why should I charge more?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Most freelancers anchor to what they earned before, not to the value they create now. RateRight grounds your number in market data and the specific leverage you bring, then hands you the words to quote it without flinching."
+      }
+    }
+  ]
+}
+</script>
+
+<style>
+  :root{
+    --ink:#0a1715;
+    --ink-2:#0c1c1a;
+    --panel:#10231f;
+    --panel-2:#16302a;
+    --line:rgba(212,180,131,0.14);
+    --line-soft:rgba(242,239,233,0.08);
+    --gold:#e3c489;
+    --gold-deep:#c9a45f;
+    --sage:#86c2ad;
+    --sage-deep:#4f9b84;
+    --cream:#f4f1e9;
+    --cream-dim:#cdd3cb;
+    --muted:#8ba29a;
+    --warm:#e8a36b;
+    --shadow:0 30px 80px -30px rgba(0,0,0,0.7);
+    --r:18px;
+    --maxw:1000px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 700px at 78% -8%, rgba(227,196,137,0.10), transparent 60%),
+      radial-gradient(900px 600px at 8% 12%, rgba(79,155,132,0.10), transparent 55%),
+      linear-gradient(180deg,#091413 0%, var(--ink-2) 32%, var(--ink) 100%);
+    color:var(--cream);
+    font-family:"Plus Jakarta Sans", system-ui, sans-serif;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  ::selection{background:rgba(227,196,137,0.28);color:#fff}
+  a{color:var(--gold);text-decoration:none}
+  a:hover{color:var(--cream)}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+
+  /* ---------- ambient grain / vignette ---------- */
+  body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(120% 120% at 50% 0%, transparent 55%, rgba(0,0,0,0.45) 100%);
+    mix-blend-mode:multiply;
+  }
+
+  /* ---------- nav ---------- */
+  header.nav{
+    position:sticky;top:0;z-index:40;
+    backdrop-filter:blur(14px);
+    background:linear-gradient(180deg, rgba(9,20,19,0.85), rgba(9,20,19,0.4));
+    border-bottom:1px solid var(--line-soft);
+  }
+  .nav-in{display:flex;align-items:center;justify-content:space-between;height:66px}
+  .brand{display:flex;align-items:center;gap:11px;font-family:"Bricolage Grotesque";font-weight:800;font-size:19px;letter-spacing:-0.01em;color:var(--cream)}
+  .brand .mark{
+    width:30px;height:30px;border-radius:9px;position:relative;flex:none;
+    background:conic-gradient(from 220deg, var(--sage-deep), var(--gold), var(--warm), var(--sage-deep));
+    box-shadow:0 0 0 1px rgba(227,196,137,0.35), 0 8px 22px -6px rgba(227,196,137,0.5);
+  }
+  .brand .mark::after{content:"";position:absolute;inset:7px;border-radius:5px;background:var(--ink);}
+  .brand .mark::before{content:"";position:absolute;left:50%;top:50%;width:2px;height:11px;background:var(--gold);transform-origin:bottom center;transform:translate(-50%,-100%) rotate(38deg);z-index:2;border-radius:2px;box-shadow:0 0 6px var(--gold)}
+  .nav-cta{display:flex;align-items:center;gap:18px}
+  .nav-link{color:var(--cream-dim);font-weight:500;font-size:14.5px}
+  .nav-link:hover{color:var(--gold)}
+  .btn-ghost{
+    border:1px solid var(--line);padding:9px 16px;border-radius:999px;font-size:14px;font-weight:600;color:var(--cream);
+    transition:.25s;cursor:pointer;background:transparent
+  }
+  .btn-ghost:hover{border-color:var(--gold);background:rgba(227,196,137,0.08)}
+  @media(max-width:620px){.nav-link.hideSm{display:none}}
+
+  /* ---------- hero ---------- */
+  .hero{position:relative;z-index:1;padding:64px 0 36px}
+  .hero-grid{display:grid;grid-template-columns:1.04fr 0.96fr;gap:48px;align-items:center}
+  @media(max-width:860px){.hero-grid{grid-template-columns:1fr;gap:30px;text-align:center}}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:9px;font-family:"Space Mono";font-size:12px;letter-spacing:0.22em;
+    text-transform:uppercase;color:var(--gold);border:1px solid var(--line);padding:7px 14px;border-radius:999px;
+    background:rgba(227,196,137,0.05)
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--sage);box-shadow:0 0 10px var(--sage)}
+  h1.hero-title{
+    font-family:"Bricolage Grotesque";font-weight:800;font-size:clamp(40px,6.6vw,68px);line-height:0.98;
+    letter-spacing:-0.025em;margin:22px 0 0;
+    background:linear-gradient(180deg,#fff 0%, #f0ead8 55%, #cdb487 130%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  h1.hero-title em{font-style:italic;color:transparent;background:linear-gradient(110deg,var(--gold),var(--warm));-webkit-background-clip:text;background-clip:text}
+  .hero-sub{color:var(--cream-dim);font-size:clamp(16px,2vw,18.5px);max-width:520px;margin:20px 0 0}
+  @media(max-width:860px){.hero-sub{margin-left:auto;margin-right:auto}}
+  .hero-actions{display:flex;gap:14px;margin-top:30px;flex-wrap:wrap}
+  @media(max-width:860px){.hero-actions{justify-content:center}}
+  .btn-primary{
+    position:relative;border:none;cursor:pointer;padding:15px 26px;border-radius:999px;font-size:15px;font-weight:700;
+    font-family:"Plus Jakarta Sans";color:#1a1208;letter-spacing:-0.01em;
+    background:linear-gradient(120deg,var(--gold) 0%, #f1d8a4 50%, var(--gold-deep) 100%);
+    box-shadow:0 14px 40px -12px rgba(227,196,137,0.7), inset 0 1px 0 rgba(255,255,255,0.55);
+    transition:transform .2s, box-shadow .25s;
+  }
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 22px 52px -12px rgba(227,196,137,0.85)}
+  .btn-primary:active{transform:translateY(0)}
+  .btn-line{padding:15px 24px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,0.02);color:var(--cream);font-weight:600;font-size:15px;cursor:pointer;transition:.25s}
+  .btn-line:hover{border-color:var(--sage);color:var(--sage)}
+  .trust{display:flex;gap:22px;margin-top:28px;flex-wrap:wrap;color:var(--muted);font-size:13px}
+  @media(max-width:860px){.trust{justify-content:center}}
+  .trust span{display:inline-flex;align-items:center;gap:7px}
+  .trust b{color:var(--sage);font-weight:700;font-family:"Space Mono"}
+
+  /* ---------- dial hero canvas ---------- */
+  .dial-stage{position:relative;display:flex;justify-content:center;align-items:center;min-height:380px}
+  .dial-halo{position:absolute;width:115%;height:115%;left:-7%;top:-7%;border-radius:50%;
+    background:radial-gradient(circle at 50% 42%, rgba(227,196,137,0.16), transparent 62%);filter:blur(8px);pointer-events:none}
+  canvas#dial{width:100%;max-width:430px;height:auto;display:block;position:relative;z-index:2}
+  .dial-caption{position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);z-index:3;
+    font-family:"Space Mono";font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+
+  /* ---------- section frame ---------- */
+  section{position:relative;z-index:1}
+  .sec-head{text-align:center;max-width:600px;margin:0 auto 38px}
+  .kicker{font-family:"Space Mono";font-size:12px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);opacity:.9}
+  h2.sec-title{font-family:"Bricolage Grotesque";font-weight:800;font-size:clamp(28px,4vw,40px);letter-spacing:-0.02em;margin:10px 0 0;line-height:1.05}
+  .sec-title-sub{color:var(--cream-dim);margin-top:12px;font-size:16px}
+
+  /* ---------- the app ---------- */
+  #app{padding:30px 0 50px;scroll-margin-top:80px}
+  .app-grid{display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:start}
+  @media(max-width:860px){.app-grid{grid-template-columns:1fr}}
+  .card{
+    background:linear-gradient(180deg, rgba(22,48,42,0.85), rgba(16,35,31,0.9));
+    border:1px solid var(--line-soft);border-radius:var(--r);padding:26px;
+    box-shadow:var(--shadow);position:relative;overflow:hidden;
+  }
+  .card::before{content:"";position:absolute;inset:0;border-radius:var(--r);padding:1px;
+    background:linear-gradient(160deg, rgba(227,196,137,0.25), transparent 40%, transparent 70%, rgba(134,194,173,0.18));
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+  .card h3{font-family:"Bricolage Grotesque";font-weight:600;font-size:19px;margin:0 0 4px;letter-spacing:-0.01em}
+  .card .hint{color:var(--muted);font-size:13px;margin:0 0 20px}
+
+  label.fld{display:block;margin-bottom:16px}
+  label.fld > span{display:block;font-size:13px;font-weight:600;color:var(--cream-dim);margin-bottom:7px;letter-spacing:0.01em}
+  .ctrl,select,input[type=text],input[type=number]{
+    width:100%;padding:12px 14px;border-radius:11px;border:1px solid var(--line);
+    background:rgba(8,18,16,0.6);color:var(--cream);font-family:"Plus Jakarta Sans";font-size:15px;
+    transition:.2s;appearance:none;
+  }
+  select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23e3c489' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;cursor:pointer}
+  .ctrl:focus,select:focus,input:focus,button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-color:var(--gold)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:460px){.row2{grid-template-columns:1fr}}
+
+  .seg{display:flex;gap:6px;background:rgba(8,18,16,0.5);border:1px solid var(--line);border-radius:12px;padding:5px}
+  .seg button{flex:1;border:none;background:transparent;color:var(--cream-dim);padding:9px 6px;border-radius:8px;font-family:"Plus Jakarta Sans";font-weight:600;font-size:13.5px;cursor:pointer;transition:.2s}
+  .seg button[aria-pressed=true]{background:linear-gradient(120deg,var(--gold),var(--gold-deep));color:#1a1208;box-shadow:0 6px 18px -8px rgba(227,196,137,0.8)}
+
+  .chips{display:flex;flex-wrap:wrap;gap:9px}
+  .chip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:rgba(8,18,16,0.4);
+    padding:8px 13px;border-radius:999px;font-size:13px;font-weight:500;color:var(--cream-dim);cursor:pointer;transition:.2s;user-select:none}
+  .chip:hover{border-color:var(--sage)}
+  .chip[aria-pressed=true]{background:rgba(134,194,173,0.14);border-color:var(--sage);color:var(--cream)}
+  .chip .tick{width:15px;height:15px;border-radius:5px;border:1px solid var(--line);display:grid;place-items:center;font-size:10px;color:transparent;transition:.2s}
+  .chip[aria-pressed=true] .tick{background:var(--sage);border-color:var(--sage);color:#0a1715}
+
+  /* ---------- results ---------- */
+  .readout{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:4px 0 20px}
+  .ro{background:rgba(8,18,16,0.5);border:1px solid var(--line-soft);border-radius:13px;padding:14px 12px;text-align:center;position:relative}
+  .ro.mid{border-color:rgba(227,196,137,0.4);background:linear-gradient(180deg,rgba(227,196,137,0.1),rgba(8,18,16,0.5))}
+  .ro .lbl{font-family:"Space Mono";font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)}
+  .ro .val{font-family:"Space Mono";font-weight:700;font-size:clamp(20px,4.4vw,27px);color:var(--cream);margin-top:5px;letter-spacing:-0.02em}
+  .ro.mid .val{color:var(--gold)}
+  .ro .unit{font-size:11px;color:var(--muted);font-family:"Space Mono"}
+
+  .altline{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13.5px;color:var(--cream-dim);
+    background:rgba(8,18,16,0.4);border:1px solid var(--line-soft);border-radius:11px;padding:12px 15px;margin-bottom:18px}
+  .altline b{font-family:"Space Mono";color:var(--sage);font-weight:700}
+
+  .justify{font-size:14.5px;line-height:1.7;color:var(--cream-dim);background:rgba(8,18,16,0.35);border-left:2px solid var(--gold);
+    border-radius:0 12px 12px 0;padding:14px 18px;margin-bottom:20px}
+  .justify b{color:var(--cream);font-weight:600}
+  .justify .src{display:block;margin-top:9px;font-family:"Space Mono";font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted)}
+
+  .scripts h4{font-family:"Bricolage Grotesque";font-weight:600;font-size:15px;margin:0 0 12px;color:var(--cream)}
+  .script{border:1px solid var(--line-soft);border-radius:13px;margin-bottom:12px;overflow:hidden;background:rgba(8,18,16,0.35)}
+  .script-top{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid var(--line-soft)}
+  .script-top .name{font-size:13px;font-weight:600;color:var(--cream)}
+  .script-top .name small{display:block;color:var(--muted);font-weight:400;font-size:11.5px}
+  .copy{border:1px solid var(--line);background:transparent;color:var(--gold);font-size:12px;font-weight:600;padding:6px 13px;border-radius:999px;cursor:pointer;transition:.2s;white-space:nowrap;font-family:"Plus Jakarta Sans"}
+  .copy:hover{background:var(--gold);color:#1a1208}
+  .copy.done{background:var(--sage);border-color:var(--sage);color:#0a1715}
+  .script-body{padding:14px;font-size:13.5px;line-height:1.65;color:var(--cream-dim);white-space:pre-wrap}
+
+  .empty{color:var(--muted);text-align:center;padding:38px 10px;font-size:14.5px}
+  .empty .big{font-family:"Bricolage Grotesque";font-size:40px;display:block;margin-bottom:6px;opacity:.5}
+
+  /* ---------- pro ---------- */
+  #pro{padding:20px 0 60px;scroll-margin-top:80px}
+  .pro-card{background:
+      radial-gradient(600px 300px at 90% -20%, rgba(227,196,137,0.14), transparent 60%),
+      linear-gradient(180deg, rgba(22,48,42,0.9), rgba(13,28,25,0.95));
+    border:1px solid rgba(227,196,137,0.22);border-radius:22px;padding:30px;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+  .pro-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+  .pro-badge{font-family:"Space Mono";font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#1a1208;background:linear-gradient(120deg,var(--gold),var(--warm));padding:5px 11px;border-radius:999px;font-weight:700}
+  .pro-card h3{font-family:"Bricolage Grotesque";font-weight:800;font-size:23px;margin:0;letter-spacing:-0.01em}
+  .pro-card p.lead{color:var(--cream-dim);max-width:640px;font-size:15px}
+  .key-row{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 8px}
+  .key-row input{flex:1;min-width:220px}
+  .ai-out{margin-top:18px;border:1px solid var(--line);border-radius:14px;background:rgba(8,18,16,0.5);padding:16px 18px;font-size:14.5px;line-height:1.7;color:var(--cream);white-space:pre-wrap;min-height:54px}
+  .ai-out .ph{color:var(--muted)}
+  .disc{font-size:12px;color:var(--muted);margin-top:14px}
+  .disc a{color:var(--gold)}
+  .spinner{display:inline-block;width:15px;height:15px;border:2px solid rgba(227,196,137,0.3);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px;margin-right:7px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ---------- faq ---------- */
+  #faq{padding:30px 0 50px}
+  details{border:1px solid var(--line-soft);border-radius:14px;background:rgba(16,35,31,0.5);margin-bottom:12px;overflow:hidden;transition:.2s}
+  details[open]{border-color:var(--line)}
+  summary{cursor:pointer;padding:17px 20px;font-weight:600;font-size:15.5px;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:14px;color:var(--cream)}
+  summary::-webkit-details-marker{display:none}
+  summary .pm{font-family:"Space Mono";color:var(--gold);transition:.3s;flex:none}
+  details[open] summary .pm{transform:rotate(45deg)}
+  details .ans{padding:0 20px 18px;color:var(--cream-dim);font-size:14.5px;line-height:1.7}
+
+  /* ---------- footer ---------- */
+  footer{border-top:1px solid var(--line-soft);padding:34px 0 50px;position:relative;z-index:1;margin-top:20px}
+  .foot{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap;color:var(--muted);font-size:13px}
+  .foot .brand{font-size:16px}
+
+  /* ---------- entrance anim ---------- */
+  .reveal{opacity:0;transform:translateY(22px);transition:opacity .8s cubic-bezier(.2,.7,.2,1), transform .8s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+  .reveal.d1{transition-delay:.08s}.reveal.d2{transition-delay:.16s}.reveal.d3{transition-delay:.24s}.reveal.d4{transition-delay:.32s}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+    .reveal{opacity:1;transform:none}
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-in">
+    <div class="brand"><span class="mark" aria-hidden="true"></span>RateRight</div>
+    <nav class="nav-cta">
+      <a class="nav-link hideSm" href="#app">Calculator</a>
+      <a class="nav-link hideSm" href="#pro">Pro</a>
+      <a class="nav-link hideSm" href="#faq">FAQ</a>
+      <a class="btn-ghost" href="#app">Find my rate</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow reveal"><span class="dot"></span> Rate intelligence for solo experts</span>
+      <h1 class="hero-title reveal d1">Charge what you're<br><em>actually</em> worth.</h1>
+      <p class="hero-sub reveal d2">RateRight reads your discipline, experience and market, then dials in a defensible rate range — with the exact words to quote it. No more pricing from your gut.</p>
+      <div class="hero-actions reveal d3">
+        <button class="btn-primary" onclick="document.getElementById('app').scrollIntoView()">Calculate my rate →</button>
+        <a class="btn-line" href="#pro">See Pro mode</a>
+      </div>
+      <div class="trust reveal d4">
+        <span><b>100%</b> client-side</span>
+        <span><b>0</b> signup, 0 tracking</span>
+        <span><b>9</b> disciplines modeled</span>
+      </div>
+    </div>
+    <div class="dial-stage reveal d2">
+      <div class="dial-halo" aria-hidden="true"></div>
+      <canvas id="dial" width="860" height="860" role="img" aria-label="Animated rate value dial"></canvas>
+      <div class="dial-caption">your rate dial · live</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ APP ============ -->
+<section id="app">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="kicker">The calculator</div>
+      <h2 class="sec-title">Tune the inputs. Watch the dial settle.</h2>
+      <p class="sec-title-sub">Everything runs in your browser. Nothing is sent anywhere.</p>
+    </div>
+
+    <div class="app-grid">
+      <!-- INPUTS -->
+      <div class="card reveal">
+        <h3>Your work</h3>
+        <p class="hint">The more honest the inputs, the more defensible the number.</p>
+
+        <label class="fld"><span>Discipline</span>
+          <select id="discipline" class="ctrl">
+            <option value="consulting">Consulting & Strategy</option>
+            <option value="dev">Software / Web Development</option>
+            <option value="design">Design (UI/UX, Brand)</option>
+            <option value="data">Data & Analytics / AI</option>
+            <option value="coaching">Coaching & Training</option>
+            <option value="video">Photo & Video</option>
+            <option value="marketing">Marketing & SEO</option>
+            <option value="writing">Writing & Content</option>
+            <option value="ops">Virtual Assistant / Ops</option>
+            <option value="other">Other / General freelance</option>
+          </select>
+        </label>
+
+        <div class="row2">
+          <label class="fld"><span>Experience</span>
+            <select id="experience" class="ctrl">
+              <option value="0.55">Under 1 year</option>
+              <option value="0.78">1–2 years</option>
+              <option value="1" selected>3–5 years</option>
+              <option value="1.35">6–9 years</option>
+              <option value="1.8">10+ years (senior)</option>
+            </select>
+          </label>
+          <label class="fld"><span>Client market</span>
+            <select id="market" class="ctrl">
+              <option value="1.05">Remote · US/global clients</option>
+              <option value="1" selected>United States</option>
+              <option value="0.95">UK / Australia / NZ</option>
+              <option value="0.92">Western Europe</option>
+              <option value="0.9">Canada</option>
+              <option value="0.8">Middle East / Gulf</option>
+              <option value="0.6">Eastern Europe</option>
+              <option value="0.55">Latin America</option>
+              <option value="0.5">Southeast Asia / Africa</option>
+              <option value="0.45">South Asia</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="fld"><span>Pricing model</span>
+          <div class="seg" id="model" role="group" aria-label="Pricing model">
+            <button type="button" data-model="hourly" aria-pressed="true">Hourly</button>
+            <button type="button" data-model="day" aria-pressed="false">Day rate</button>
+            <button type="button" data-model="project" aria-pressed="false">Project</button>
+          </div>
+        </label>
+
+        <label class="fld" id="hoursWrap" hidden><span>Estimated project hours</span>
+          <input type="number" id="hours" class="ctrl" value="40" min="1" max="2000" step="1" />
+        </label>
+
+        <label class="fld"><span>Leverage signals — what makes you the obvious pick</span></label>
+        <div class="chips" id="signals">
+          <button type="button" class="chip" data-w="0.15" aria-pressed="false"><span class="tick">✓</span>Niche / specialized skill</button>
+          <button type="button" class="chip" data-w="0.12" aria-pressed="false"><span class="tick">✓</span>Proven results / strong portfolio</button>
+          <button type="button" class="chip" data-w="0.18" aria-pressed="false"><span class="tick">✓</span>Enterprise / B2B clients</button>
+          <button type="button" class="chip" data-w="0.1" aria-pressed="false"><span class="tick">✓</span>Urgent / tight timelines</button>
+          <button type="button" class="chip" data-w="0.1" aria-pressed="false"><span class="tick">✓</span>In high demand right now</button>
+          <button type="button" class="chip" data-w="-0.06" aria-pressed="false"><span class="tick">✓</span>Retainer / long-term</button>
+        </div>
+
+        <label class="fld" style="margin-top:18px"><span>Your current rate (optional — for a reality check)</span>
+          <input type="number" id="current" class="ctrl" placeholder="e.g. 65" min="0" step="1" />
+        </label>
+      </div>
+
+      <!-- RESULTS -->
+      <div class="card reveal d1" id="resultCard">
+        <h3>Your recommended rate</h3>
+        <p class="hint" id="resultHint">Adjust the inputs — your range updates instantly.</p>
+
+        <div id="results">
+          <div class="readout">
+            <div class="ro"><div class="lbl">Floor</div><div class="val" id="vLow">$—</div><div class="unit" id="uLow">/hr</div></div>
+            <div class="ro mid"><div class="lbl">Recommended</div><div class="val" id="vMid">$—</div><div class="unit" id="uMid">/hr</div></div>
+            <div class="ro"><div class="lbl">Premium</div><div class="val" id="vHigh">$—</div><div class="unit" id="uHigh">/hr</div></div>
+          </div>
+
+          <div class="altline">
+            <span>Equivalent hourly <b id="aHourly">$—</b></span>
+            <span>Day rate <b id="aDay">$—</b></span>
+            <span>Annual @ ~1,300 billable hrs <b id="aYear">$—</b></span>
+          </div>
+
+          <div class="justify" id="justify">
+            Pick your discipline and experience and a tailored, citable justification appears here.
+            <span class="src">transparent client-side model · v1</span>
+          </div>
+
+          <div class="scripts">
+            <h4>Copy-paste quote scripts</h4>
+            <div id="scriptList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRO ============ -->
+<section id="pro">
+  <div class="wrap">
+    <div class="pro-card reveal">
+      <div class="pro-head">
+        <span class="pro-badge">Pro · BYO key</span>
+        <h3>Let AI tailor the justification to a specific client</h3>
+      </div>
+      <p class="lead">The free tier gives you a sharp, data-grounded justification. Pro takes the same numbers plus a sentence about <em>this</em> client or project and writes a custom rationale + a ready-to-send quote message in a confident, human voice — no corporate filler. Paste your own GLM (z.ai) key; it stays in this tab and is sent only to z.ai.</p>
+
+      <label class="fld" style="margin-top:8px"><span>Context — who's the client / what's the project?</span>
+        <input type="text" id="proContext" class="ctrl" placeholder="e.g. a Series-A SaaS startup needs a 6-week design system overhaul, referred by a past client" />
+      </label>
+
+      <div class="key-row">
+        <input type="password" id="glmKey" class="ctrl" placeholder="Paste your GLM API key (sk-…)" autocomplete="off" />
+        <button class="btn-primary" id="proGo">Generate with GLM</button>
+      </div>
+
+      <div class="ai-out" id="aiOut"><span class="ph">Your tailored justification + quote message will appear here.</span></div>
+
+      <p class="disc">No key? <a href="https://z.ai/subscribe?ic=BWTG6TRYYQ" target="_blank" rel="noopener">Get a GLM key (5% off via this link)</a>. Disclosure: that's a referral link — it helps keep RateRight free and costs you nothing extra. Your key is never stored or sent anywhere except the official z.ai API.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="kicker">Good to know</div>
+      <h2 class="sec-title">Questions, answered</h2>
+    </div>
+    <div class="reveal d1">
+      <details open><summary>How does RateRight calculate my rate? <span class="pm">+</span></summary><div class="ans">It uses transparent, client-side math: a market baseline for your discipline is multiplied by your experience band, your client market, and the leverage signals you select (niche skill, enterprise clients, proof, urgency). It returns a Floor / Recommended / Premium band rounded to clean numbers. Nothing leaves your browser — you can read every multiplier in the page source.</div></details>
+      <details><summary>Is it really free? <span class="pm">+</span></summary><div class="ans">Yes. The calculator, the dial, the justification, and all three quote scripts are 100% free and run entirely in your browser. Pro is optional and only needs your own GLM key for client-specific AI copy.</div></details>
+      <details><summary>Do you store my data or my API key? <span class="pm">+</span></summary><div class="ans">No backend, no signup, no tracking. Your inputs live in the page. In Pro mode your key stays in the browser tab and is sent only to api.z.ai. Close the tab and it's gone.</div></details>
+      <details><summary>Aren't these rates too high? <span class="pm">+</span></summary><div class="ans">They're market-grounded for the inputs you give. Most freelancers under-price because they anchor to their old salary instead of the value they create. The Floor is your walk-away minimum; the Recommended is where confident operators quote. If a number feels high, that's usually the signal — not the error.</div></details>
+      <details><summary>What's the affiliate link? <span class="pm">+</span></summary><div class="ans">The "Get a GLM key" button is a referral link to z.ai — it gives you 5% off and helps keep RateRight free. It's entirely optional; the whole tool works without ever clicking it.</div></details>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <div class="brand"><span class="mark" aria-hidden="true"></span>RateRight</div>
+    <div>Built for freelancers &amp; consultants who are done under-charging. Private by design · no accounts · no tracking.</div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---------- reveal on scroll ---------- */
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); } });
+  }, {threshold:0.12});
+  document.querySelectorAll(".reveal").forEach(function(el){ io.observe(el); });
+
+  /* ================= MODEL ================= */
+  var BASE = { // mid (3-5yr) US hourly USD baseline
+    consulting:130, dev:95, design:85, data:100, coaching:110,
+    video:90, marketing:80, writing:65, ops:45, other:70
+  };
+  var LABEL = {
+    consulting:"consulting & strategy", dev:"software development", design:"design",
+    data:"data & analytics", coaching:"coaching & training", video:"photo & video",
+    marketing:"marketing & SEO", writing:"writing & content", ops:"operations support", other:"freelance work"
+  };
+  var EXPTXT = {0.55:"under a year in", 0.78:"1–2 years in", 1:"a few years into", 1.35:"6–9 years deep in", 1.8:"a decade-plus in"};
+  var BAND   = {0.55:"emerging", 0.78:"developing", 1:"established mid-level", 1.35:"senior", 1.8:"expert / principal"};
+
+  var state = { model:"hourly", signals:[] };
+
+  function round5(n){ return Math.max(5, Math.round(n/5)*5); }
+  function round25(n){ return Math.max(25, Math.round(n/25)*25); }
+  function money(n){ return "$" + n.toLocaleString("en-US"); }
+
+  function selectedSignals(){
+    var out=[];
+    document.querySelectorAll("#signals .chip").forEach(function(c){
+      if(c.getAttribute("aria-pressed")==="true"){
+        out.push({w:parseFloat(c.dataset.w), label:c.textContent.trim()});
+      }
+    });
+    return out;
+  }
+
+  function compute(){
+    var disc = document.getElementById("discipline").value;
+    var exp  = parseFloat(document.getElementById("experience").value);
+    var mkt  = parseFloat(document.getElementById("market").value);
+    var sigs = selectedSignals();
+    var lift = sigs.reduce(function(s,x){return s+x.w;},0);
+    var mid  = BASE[disc] * exp * mkt * (1 + lift);
+    var lowH = round5(mid*0.82), midH = round5(mid), highH = round5(mid*1.28);
+    return {disc:disc, exp:exp, mkt:mkt, sigs:sigs, lift:lift, lowH:lowH, midH:midH, highH:highH, rawMid:mid};
+  }
+
+  function buildJustify(r){
+    var b = BAND[r.exp], e = EXPTXT[r.exp];
+    var disc = LABEL[r.disc];
+    var s = "";
+    s += "You're <b>" + e + " " + disc + "</b>, which places you in the <b>" + b + "</b> band. ";
+    s += "Against market baselines for your discipline and client region, that anchors your hour at <b>" + money(r.midH) + "</b>. ";
+    if(r.sigs.length){
+      var names = r.sigs.filter(function(x){return x.w>0;}).map(function(x){return x.label.toLowerCase();});
+      var pct = Math.round(r.sigs.reduce(function(a,x){return a+(x.w>0?x.w:0);},0)*100);
+      if(names.length){
+        s += "Your edge — <b>" + names.join(", ") + "</b> — adds roughly <b>+" + pct + "%</b> of pricing power, ";
+        s += "so quoting toward <b>" + money(r.highH) + "</b> is justified, not greedy. ";
+      }
+    } else {
+      s += "Add a leverage signal or two and your defensible ceiling rises. ";
+    }
+    s += "Treat <b>" + money(r.lowH) + "</b> as your walk-away floor — below it, you're subsidizing the client.";
+    return s;
+  }
+
+  function buildScripts(r){
+    var disc = LABEL[r.disc];
+    var day = round25(r.midH*8);
+    var lo = money(r.lowH), mid = money(r.midH), hi = money(r.highH);
+    return [
+      {
+        name:"The confident anchor",
+        sub:"opens high, frames value",
+        body:"Happy to take this on. For " + disc + " at this level, my rate is " + mid + "/hour (" + money(day) + "/day for focused blocks). That reflects the depth I bring and the outcome you're after — I'd rather do it right than do it cheap. Shall I put together a scope?"
+      },
+      {
+        name:"The range + reason",
+        sub:"transparent, easy yes",
+        body:"For work like this I typically land between " + lo + " and " + hi + "/hour depending on scope and turnaround. Given what you've described, I'd put this toward " + mid + "/hour. I can hold that for the next two weeks — want me to draft a proposal at that rate?"
+      },
+      {
+        name:"The firm-but-warm raise",
+        sub:"for an existing client",
+        body:"It's been great working together. As of next month I'm moving my rate to " + mid + "/hour to reflect the scope our projects now cover. Everything else stays exactly the same — same responsiveness, same quality. Let me know if you'd like to lock in current terms for one more cycle."
+      }
+    ];
+  }
+
+  /* ---------- render ---------- */
+  function fmtFor(model, h){
+    if(model==="hourly") return {v:money(h), u:"/hr"};
+    if(model==="day")    return {v:money(round25(h*8)), u:"/day"};
+    var hours = Math.max(1, parseInt(document.getElementById("hours").value||"40",10));
+    return {v:money(round25(h*hours)), u:"project"};
+  }
+
+  function render(){
+    var r = compute();
+    state.last = r;
+    var hint = document.getElementById("resultHint");
+
+    var lo=fmtFor(state.model,r.lowH), md=fmtFor(state.model,r.midH), hg=fmtFor(state.model,r.highH);
+    setTxt("vLow",lo.v); setTxt("uLow",lo.u);
+    setTxt("vMid",md.v); setTxt("uMid",md.u);
+    setTxt("vHigh",hg.v); setTxt("uHigh",hg.u);
+
+    var day = round25(r.midH*8);
+    var yr  = round5(r.midH)*1300;
+    setTxt("aHourly", money(r.midH));
+    setTxt("aDay", money(day));
+    setTxt("aYear", money(Math.round(yr/1000)*1000));
+
+    document.getElementById("justify").innerHTML =
+      buildJustify(r) + '<span class="src">transparent client-side model · v1 · ' + (r.sigs.length) + ' signal(s) applied</span>';
+
+    // current-rate reality check
+    var cur = parseFloat(document.getElementById("current").value);
+    if(!isNaN(cur) && cur>0){
+      var gap = Math.round((r.midH/cur - 1)*100);
+      if(gap >= 8){
+        hint.innerHTML = "You're charging "+money(cur)+"/hr. The model says you're leaving ~<b style='color:var(--warm)'>"+gap+"%</b> on the table.";
+      } else if(gap <= -8){
+        hint.innerHTML = "You're at "+money(cur)+"/hr — actually <b style='color:var(--sage)'>above</b> the modeled recommendation. Hold the line.";
+      } else {
+        hint.innerHTML = "You're at "+money(cur)+"/hr — right in line with the model. Solid.";
+      }
+    } else {
+      hint.textContent = "Adjust the inputs — your range updates instantly.";
+    }
+
+    // scripts
+    var list = document.getElementById("scriptList");
+    list.innerHTML = "";
+    buildScripts(r).forEach(function(sc){
+      var el = document.createElement("div");
+      el.className = "script";
+      el.innerHTML =
+        '<div class="script-top"><div class="name">'+sc.name+'<small>'+sc.sub+'</small></div>'+
+        '<button class="copy" type="button">Copy</button></div>'+
+        '<div class="script-body"></div>';
+      el.querySelector(".script-body").textContent = sc.body;
+      var btn = el.querySelector(".copy");
+      btn.addEventListener("click", function(){
+        navigator.clipboard.writeText(sc.body).then(function(){
+          btn.textContent="Copied"; btn.classList.add("done");
+          setTimeout(function(){btn.textContent="Copy";btn.classList.remove("done");},1500);
+        });
+      });
+      list.appendChild(el);
+    });
+
+    // dial target fraction
+    var dialMax = r.highH*1.42;
+    dial.setTarget(r.lowH/dialMax, r.midH/dialMax, r.highH/dialMax, r.midH, state.model);
+  }
+  function setTxt(id,t){ document.getElementById(id).textContent = t; }
+
+  /* ---------- wire inputs ---------- */
+  ["discipline","experience","market","current","hours"].forEach(function(id){
+    document.getElementById(id).addEventListener("input", render);
+    document.getElementById(id).addEventListener("change", render);
+  });
+  document.querySelectorAll("#model button").forEach(function(b){
+    b.addEventListener("click", function(){
+      document.querySelectorAll("#model button").forEach(function(x){x.setAttribute("aria-pressed","false");});
+      b.setAttribute("aria-pressed","true");
+      state.model = b.dataset.model;
+      document.getElementById("hoursWrap").hidden = (state.model!=="project");
+      render();
+    });
+  });
+  document.querySelectorAll("#signals .chip").forEach(function(c){
+    c.addEventListener("click", function(){
+      c.setAttribute("aria-pressed", c.getAttribute("aria-pressed")==="true"?"false":"true");
+      render();
+    });
+  });
+
+  /* ================= DIAL CANVAS ================= */
+  var dial = (function(){
+    var cv = document.getElementById("dial");
+    var ctx = cv.getContext("2d");
+    var DPR = Math.min(window.devicePixelRatio||1, 2);
+    var SIZE = 430;
+    function size(){
+      var w = Math.min(cv.parentElement.clientWidth, 430);
+      SIZE = w;
+      cv.width = w*DPR; cv.height = w*DPR;
+      cv.style.height = w+"px";
+      ctx.setTransform(DPR,0,0,DPR,0,0);
+    }
+    size();
+    window.addEventListener("resize", function(){ size(); });
+
+    var START = Math.PI*0.75, END = Math.PI*2.25, SWEEP = END-START;
+    var tgt = {lo:0.18, mid:0.34, hi:0.5, val:0, model:"hourly"};
+    var cur = {lo:0.18, mid:0.34, hi:0.5, needle:0.0, val:0};
+    var t0 = performance.now();
+
+    function setTarget(lo,mid,hi,val,model){
+      tgt.lo=clamp(lo); tgt.mid=clamp(mid); tgt.hi=clamp(hi); tgt.val=val; tgt.model=model;
+      if(reduce){ cur.lo=tgt.lo;cur.mid=tgt.mid;cur.hi=tgt.hi;cur.needle=tgt.mid;cur.val=val; draw(performance.now()); }
+    }
+    function clamp(v){ return Math.max(0.02, Math.min(0.98, v||0)); }
+
+    function arc(r, a0, a1){ ctx.beginPath(); ctx.arc(0,0,r,a0,a1); }
+
+    function draw(now){
+      var time = (now-t0)/1000;
+      // ease toward targets
+      var k = reduce?1:0.08;
+      cur.lo += (tgt.lo-cur.lo)*k;
+      cur.mid += (tgt.mid-cur.mid)*k;
+      cur.hi += (tgt.hi-cur.hi)*k;
+      cur.needle += (tgt.mid-cur.needle)*k;
+      cur.val += (tgt.val-cur.val)*k;
+
+      var cx=SIZE/2, cy=SIZE/2, R=SIZE*0.40;
+      ctx.clearRect(0,0,SIZE,SIZE);
+      ctx.save();
+      ctx.translate(cx,cy);
+
+      // ambient pulsing rings
+      var pulse = reduce?0:Math.sin(time*1.2)*0.5+0.5;
+      for(var i=0;i<3;i++){
+        ctx.beginPath();
+        ctx.arc(0,0, R*(1.06+i*0.07), 0, Math.PI*2);
+        ctx.strokeStyle = "rgba(134,194,173,"+(0.05 - i*0.012 + pulse*0.02)+")";
+        ctx.lineWidth = 1; ctx.stroke();
+      }
+
+      // base track
+      ctx.lineCap="round";
+      arc(R, START, END);
+      ctx.strokeStyle = "rgba(244,241,233,0.07)";
+      ctx.lineWidth = SIZE*0.045; ctx.stroke();
+
+      // ticks
+      var TICKS=44;
+      for(var j=0;j<=TICKS;j++){
+        var f=j/TICKS, a=START+f*SWEEP;
+        var inR = R - SIZE*0.045, outR = R + (j%4===0?SIZE*0.018:SIZE*0.008);
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(a)*inR, Math.sin(a)*inR);
+        ctx.lineTo(Math.cos(a)*outR, Math.sin(a)*outR);
+        var inBand = f>=cur.lo && f<=cur.hi;
+        ctx.strokeStyle = inBand ? "rgba(227,196,137,0.85)" : "rgba(244,241,233,0.16)";
+        ctx.lineWidth = j%4===0?1.6:1; ctx.stroke();
+      }
+
+      // value band (floor->premium) gradient
+      var a0=START+cur.lo*SWEEP, a1=START+cur.hi*SWEEP;
+      var grad = ctx.createLinearGradient(-R,0,R,0);
+      grad.addColorStop(0,"#4f9b84"); grad.addColorStop(0.5,"#e3c489"); grad.addColorStop(1,"#e8a36b");
+      arc(R, a0, a1);
+      ctx.strokeStyle = grad; ctx.lineWidth = SIZE*0.045;
+      ctx.shadowColor="rgba(227,196,137,0.55)"; ctx.shadowBlur=reduce?0:18;
+      ctx.stroke();
+      ctx.shadowBlur=0;
+
+      // needle to recommended
+      var na = START + cur.needle*SWEEP;
+      ctx.save();
+      ctx.rotate(na);
+      // needle shadow glow
+      ctx.beginPath();
+      ctx.moveTo(-SIZE*0.03,0);
+      ctx.lineTo(R-SIZE*0.02, -SIZE*0.006);
+      ctx.lineTo(R+SIZE*0.01, 0);
+      ctx.lineTo(R-SIZE*0.02, SIZE*0.006);
+      ctx.closePath();
+      ctx.fillStyle="#f4f1e9";
+      ctx.shadowColor="rgba(227,196,137,0.9)"; ctx.shadowBlur=reduce?0:14;
+      ctx.fill();
+      ctx.restore();
+
+      // hub
+      ctx.beginPath(); ctx.arc(0,0,SIZE*0.045,0,Math.PI*2);
+      var hg=ctx.createRadialGradient(0,0,2,0,0,SIZE*0.05);
+      hg.addColorStop(0,"#1b3a33"); hg.addColorStop(1,"#0c1c1a");
+      ctx.fillStyle=hg; ctx.fill();
+      ctx.strokeStyle="rgba(227,196,137,0.5)"; ctx.lineWidth=1.5; ctx.stroke();
+
+      // center readout
+      ctx.shadowBlur=0;
+      var unit = tgt.model==="day"?"/ day": tgt.model==="project"?"project":"/ hour";
+      var displayVal = tgt.model==="day"? round25(cur.val*8) : tgt.model==="project"? round25(cur.val * Math.max(1,parseInt(document.getElementById("hours").value||"40",10))) : Math.round(cur.val);
+      ctx.textAlign="center";
+      ctx.fillStyle="#8ba29a";
+      ctx.font='700 '+(SIZE*0.028)+'px "Space Mono", monospace';
+      ctx.fillText("RECOMMENDED", 0, -SIZE*0.085);
+      ctx.fillStyle="#e3c489";
+      ctx.font='700 '+(SIZE*0.13)+'px "Space Mono", monospace';
+      ctx.fillText("$"+displayVal.toLocaleString("en-US"), 0, SIZE*0.02);
+      ctx.fillStyle="#8ba29a";
+      ctx.font='400 '+(SIZE*0.03)+'px "Space Mono", monospace';
+      ctx.fillText(unit, 0, SIZE*0.075);
+
+      ctx.restore();
+      raf = requestAnimationFrame(draw);
+    }
+    var raf = requestAnimationFrame(draw);
+    return { setTarget:setTarget };
+  })();
+
+  /* ================= PRO / GLM ================= */
+  document.getElementById("proGo").addEventListener("click", function(){
+    var key = document.getElementById("glmKey").value.trim();
+    var out = document.getElementById("aiOut");
+    if(!key){ out.innerHTML = '<span class="ph" style="color:var(--warm)">Paste your GLM key first — or use the link below to grab one.</span>'; return; }
+    var r = state.last || compute();
+    var ctxLine = document.getElementById("proContext").value.trim() || "a typical client in this discipline";
+    var btn = this; btn.disabled=true; var old=btn.textContent; btn.innerHTML='<span class="spinner"></span>Thinking…';
+    out.innerHTML = '<span class="ph">Generating tailored copy…</span>';
+
+    var sys = "You are a pricing strategist for freelancers. Write sharp, specific, confident copy with zero corporate filler, zero clichés (never use 'leverage', 'synergy', 'in today's fast-paced', 'circle back', 'value-add'). Be concrete and human. Do not exceed the requested length.";
+    var user = "Discipline: "+LABEL[r.disc]+"\n"+
+      "Recommended rate: $"+r.midH+"/hr (range $"+r.lowH+"–$"+r.highH+"/hr)\n"+
+      "Leverage signals: "+(r.sigs.length?r.sigs.map(function(x){return x.label.trim();}).join(", "):"none selected")+"\n"+
+      "Client / project context: "+ctxLine+"\n\n"+
+      "Write TWO sections with these exact headers:\n"+
+      "JUSTIFICATION: 2-3 sentences explaining, specifically for THIS client/project, why $"+r.midH+"/hr is fair and defensible. Reference details from the context.\n"+
+      "QUOTE MESSAGE: a ready-to-send message (4-6 sentences) the freelancer can paste to this client to quote the rate confidently and warmly. End with a clear next step.";
+
+    fetch("https://api.z.ai/api/paas/v4/chat/completions", {
+      method:"POST",
+      headers:{ "authorization":"Bearer "+key, "content-type":"application/json" },
+      body: JSON.stringify({
+        model:"glm-4.5-flash",
+        thinking:{type:"disabled"},
+        max_tokens:4096,
+        messages:[ {role:"system",content:sys}, {role:"user",content:user} ]
+      })
+    }).then(function(res){
+      if(!res.ok) return res.text().then(function(t){ throw new Error("API "+res.status+": "+t.slice(0,180)); });
+      return res.json();
+    }).then(function(j){
+      var txt = j && j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
+      if(!txt){ throw new Error("Empty response from model."); }
+      out.textContent = txt.trim();
+    }).catch(function(err){
+      out.innerHTML = '<span class="ph" style="color:var(--warm)">'+ (""+err.message).replace(/</g,"&lt;") +'</span>';
+    }).finally(function(){
+      btn.disabled=false; btn.textContent=old;
+    });
+  });
+
+  /* initial render */
+  render();
+})();
+</script>
+</body>
+</html>
